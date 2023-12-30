@@ -122,7 +122,7 @@ const  validateUser = (user) => {
   const schema = {
     username: Joi.string().min(3).max(20).required(),
     email: Joi.string().min(5).max(225).required(),
-    password: Joi.string().min(5).max(20).required(),
+    password: Joi.string().min(5).max(20),
     referredBy: Joi.string().min(0).max(50).allow(''),
   }
 
