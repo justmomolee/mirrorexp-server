@@ -51,7 +51,7 @@ app.use("/api/withdrawals", require('./routes/withdrawals'));
 app.use("/api/transfers", require('./routes/transfers'));
 app.use("/api/trades", require('./routes/trades'));
 app.use("/api/utils", require("./routes/utils"));
-app.use("/api/nins", require("./routes/kycs"));
+app.use("/api/kycs", require("./routes/kycs"));
 
 // listening to port
 const PORT = !process.env.PORT ? 5000 : process.env.PORT;

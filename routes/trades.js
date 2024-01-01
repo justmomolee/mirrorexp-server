@@ -1,5 +1,5 @@
 const express = require('express')
-const { Deposit } = require("../models/transaction")
+const { Deposit, Transaction } = require("../models/transaction")
 const { User } = require("../models/user")
 const { Util } = require("../models/util")
 
@@ -47,76 +47,49 @@ router.get('/user/:email', async(req, res) => {
 });
 
 
+
+
+
 // making a trade
 router.post('/', async (req, res) => {
-  const { email, amount } = req.body;
-  const { error } = validateTrade(req.body);
-  if (error) return res.status(400).send({message: error.details[0].message});
+  const { id, amount, package } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findById( id );
   if (!user) return res.status(404).send({message: 'User not found'});
 
-  //get user pending trades
-  const userPendingTrades = await Trade.find({ email, status: 'pending' });
-  if (userPendingTrades.length >= 1) return res.status(400).send({message: 'You have reached your maximum trade limit'});
-
-  //check if user has enough funds
   if (user.trade < amount) return res.status(400).send({message: 'Insufficient funds'});
-  user.trade -= amount;
-
-  const { margin } = await Util.findById('647cd9ec3c6d2b0f516b962f');
-  if(!margin) return res.status(404).send({message: 'Margin not found'})
-
-  const spread = amount * margin
   
   try {
-    const trade = new Trade({ email, amount, spread, mainBal: user.balance, tradeBal: user.trade });
-    await Promise.all([user.save(), trade.save()]);
+    const newTradeBal = Number(user.trade) - Number(amount);
+    user.set({ trade: newTradeBal });
 
-      
-    //check if user has a referrer
-    if(user.referredBy !== "" && (!user.referredBy.includes("claimed") || !user.referredBy.includes("redeemed"))){
-      const referrer = await User.findOne({ username: user.referredBy });
-      if (!referrer) return res.status(404).send({message: 'Referrer not found'});
 
-      //get referrer pending trades
-      const allUserTrades = await Trade.find({ email });
-      const allUserApprovedDeposits = await Deposit.find({ from: email, status: 'successful' });
+    const transaction = new Transaction({ 
+      tradeData: { package, interest: ""},
+      type: "trade", amount, 
+      user: {
+        id, email: user.email,
+        name: user.fullName
+      },
+    });
 
-      console.log(allUserTrades, allUserApprovedDeposits) 
+    await Promise.all([user.save(), transaction.save()]);
 
-      let totalDeposits = 0;
-      let totalTrades = 0;
-
-      allUserApprovedDeposits.forEach(deposit => totalDeposits += deposit.amount);
-      allUserTrades.forEach(trade => totalTrades += trade.amount);
-
-      if(totalTrades >= 10 && totalDeposits >= 10){
-        referrer.bonus -= 0.5;
-        referrer.balance += 0.5;
-        user.referredBy = `${user.referredBy} redeemed`;
-
-        await user.save();
-        await referrer.save();
-      }
-    }
-
-    //emit socket and send response
-    req.app.io.emit('change');
-    req.app.io.emit('tradeProgressUpdated');
-    res.status(200).send({ trade, margin, spread });
+    res.status(200).send({ message: 'Success'});
   } catch (error) { for (i in error.errors) res.status(500).send({message: error.errors[i].message}) }
 });
 
 
+
+
 // updating a trade
-router.put('/claim/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { error } = validateTrade(req.body);
 
   if (error) return res.status(400).send({message: error.details[0].message});
 
-  const trade = await Trade.findById(id);
+  const trade = await Transaction.findById(id);
   if (!trade) return res.status(404).send({message: 'Trade not found'});
 
   try {
@@ -128,7 +101,6 @@ router.put('/claim/:id', async (req, res) => {
     await trade.save();
     res.send(trade);
   } catch (error) { for (i in error.errors) res.status(500).send({message: error.errors[i].message}) }
-
 })
 
 
@@ -137,36 +109,13 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const trade = await Trade.findByIdAndRemove(id);
+    const trade = await Transaction.findByIdAndRemove(id);
     if (!trade) return res.status(404).send({message: 'Trade not found'});
 
     res.send(trade);
   } catch (error) { for (i in error.errors) res.status(500).send({message: error.errors[i].message}) }
 })
 
-
-
-//Count user Active Trades
-router.get('/count/:email', async(req, res) => {
-  const { email } = req.params
-  if(!email) return res.status(400).send({message: "Email is required..."})
-
-  try {
-    const trades = await Trade.find({ email, status: "Active" })
-    res.send({count: trades.length})
-  } catch (x) { return res.status(500).send({message: "Something Went Wrong..."}) }
-})
-
-// Count all user Completed Trades
-router.get('/count/completed/:email', async(req, res) => {
-  const { email } = req.params
-  if(!email) return res.status(400).send({message: "Email is required..."})
-
-  try {
-    const trades = await Trade.find({ email, status: "completed" })
-    res.send({count: trades.length})
-  } catch (x) { return res.status(500).send({message: "Something Went Wrong..."}) }
-})
 
 
 module.exports = router
