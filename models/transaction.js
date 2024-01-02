@@ -41,12 +41,16 @@ const transactionSchema = new mongoose.Schema({
       type: String,
       default: '',
     },
-    coin: {
+    network: {
       type: String,
       default: '',
     },
-    network: {
+    coinName: {
       type: String,
+      default: '',
+    },
+    convertedAmount: {
+      type: Number,
       default: '',
     },
   },

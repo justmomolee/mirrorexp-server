@@ -31,24 +31,38 @@ router.get('/user/:email', async(req, res) => {
 
 // making a deposit
 router.post('/', async (req, res) => {
-  const { type, email, amount, image } = req.body;
+  const { id, amount, convertedAmount, coinName } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findById(id);
   if (!user) return res.status(400).send({message: 'Something went wrong'})
   
   try {
     const userData = {
-      id: user._id, email, name: user.fullName,
+      id: user._id, email: user.email, name: user.fullName,
     }
 
+    const walletData = {
+      convertedAmount,
+      coinName,
+      network: "",
+      address: "",
+    }
+    console.log("store")
+
     // Create a new Deposit instance
-    const deposit = new Transaction({ type, user: userData, amount });
-    await deposit.save();
+    const transaction = new Transaction({ type: "deposit", user: userData, amount, walletData });
+    await transaction.save();
+    console.log("received transaction")
 
-    const date = deposit.date;
+    const date = transaction.date;
+    const type = transaction.type
+    const email = transaction.user.email;
 
-    alertAdmin(email, amount, date, type, image)
-    res.send({message: 'Deposit successful and pending approval...', deposit});
+  
+    const emailData = await alertAdmin(email, amount, date, type)
+    if(emailData.error) return res.status(400).send({message: emailData.error})
+
+    res.send({message: 'Deposit successful and pending approval...'});
   } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
 });
 
@@ -67,7 +81,7 @@ router.put('/:id', async (req, res) => {
   try {
     const [updatedDeposit, updatedUser] = await Promise.all([
       Transaction.findByIdAndUpdate(id, { amount, status }, { new: true }),
-      User.findOneAndUpdate({ email }, { $inc: { balance: amount } }, { new: true })
+      User.findOneAndUpdate({ email }, { $inc: { deposit: amount } }, { new: true })
     ]);
 
     if (!updatedDeposit || !updatedUser) throw new Error('Failed to update deposit and user')

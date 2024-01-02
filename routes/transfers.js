@@ -35,6 +35,7 @@ router.post('/toTrade', async (req, res) => {
 
     const newDeposit = depositPlusInterest - Number(amount)
     const newTrade = Number(trade) + Number(amount)
+    console.log(newDeposit, newTrade, depositPlusInterest)
 
     if (depositPlusInterest < Number(amount)) return res.status(400).send({message: 'Insufficient Balance, fund your account and try again'})
 
