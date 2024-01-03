@@ -20,7 +20,7 @@ const styles = () => {
     
     /* Add CSS styles inline */
     .header {
-      background-color: #031C6E !important;
+      background-color: #114000 !important;
       padding: 20px;
       text-align: center;
     }
@@ -44,7 +44,7 @@ const styles = () => {
       margin-bottom: 20px;
       font-size: 22px !important;
       font-weight: 600 !important;
-      color: #031C6E !important;
+      color: #114000 !important;
       letter-spacing: 2px !important;
     }
     
@@ -64,7 +64,7 @@ const styles = () => {
     }
     
     .footer {
-      background-color: #031C6E !important;
+      background-color: #114000 !important;
       padding: 20px;
       text-align: center;
     }

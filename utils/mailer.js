@@ -138,7 +138,7 @@ async function otpMail(userEmail, otp){
             <table width="600" cellspacing="0" cellpadding="0">
               <tr>
               <td class="header">
-                <img class="logo" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo">
+                <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
               </td>
               </tr>
               <tr>
@@ -149,7 +149,7 @@ async function otpMail(userEmail, otp){
                   <p class="message">Copy and paste the above code into the form on the website to continue. This code expires in 5 minutes.</p>
                   <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@pharmedore.com.</p>
                   <p class="message">Best regards,</p>
-                  <p class="message">The Pharmedore Team</p>
+                  <p class="message">The MirrorExp Team</p>
                 </td>
               </tr>
               <tr>
@@ -203,7 +203,7 @@ async function passwordReset(userEmail){
               <table width="600" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="header">
-                    <img class="logo" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo">
+                    <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
                   </td>
                 </tr>
                 <tr>
@@ -218,7 +218,7 @@ async function passwordReset(userEmail){
                 </tr>
                 <tr>
                   <td class="footer">
-                    <img class="footer-logo" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo">
+                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
                     <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
@@ -285,7 +285,7 @@ async function alertAdmin(email, amount, date, type){
       </head>
       <body>
         <main>
-          <img style="width: 40%;" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo" />
+          <img style="width: 40%;" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo" />
           <p class="bigp">A ${type} request of $${amount} was initiated by a user with this email: ${email}, date: ${date}</p>
         </main>
       </body>
@@ -329,7 +329,7 @@ async function depositMail(fullName, amount, date, email){
               <table width="600" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="header">
-                    <img class="logo" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo">
+                    <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
                   </td>
                 </tr>
                 <tr>
@@ -337,13 +337,13 @@ async function depositMail(fullName, amount, date, email){
                     <p class="message">Dear ${fullName},</p>
                     <p class="message">Your deposit of <strong>${amount}</strong>, ${date}, was successful! Your can now use your funds to trade on MirrorExp.</p>
                     <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
-                    <p class="message">Best regards,</p>
+                    <p class="message">Best regards</p>
                     <p class="message">The MirrorExp Team</p>
                   </td>
                 </tr>
                 <tr>
                   <td class="footer">
-                    <img class="footer-logo" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo">
+                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
                     <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
@@ -393,7 +393,7 @@ async function withdrawalMail(fullName, amount, date, email){
               <table width="600" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="header">
-                    <img class="logo" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo">
+                    <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
                   </td>
                 </tr>
                 <tr>
@@ -401,13 +401,13 @@ async function withdrawalMail(fullName, amount, date, email){
                     <p class="message">Dear ${fullName},</p>
                     <p class="message">Your Withdrawal of <strong>${amount}</strong>, ${date}, was successful! Thanks for choosing MirrorExp!</p>
                     <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
-                    <p class="message">Best regards,</p>
+                    <p class="message">Best regards</p>
                     <p class="message">The MirrorExp Team</p>
                   </td>
                 </tr>
                 <tr>
                   <td class="footer">
-                    <img class="footer-logo" src="https://www.mirrorexp.co/static/media/logo.ca0cdbc6d61ddc5b8dfc.png" alt="MirrorExp Logo">
+                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
                     <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
