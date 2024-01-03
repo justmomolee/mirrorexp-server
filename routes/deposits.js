@@ -47,12 +47,10 @@ router.post('/', async (req, res) => {
       network: "",
       address: "",
     }
-    console.log("store")
 
-    // Create a new Deposit instance
+    // Create a new Transaction instance
     const transaction = new Transaction({ type: "deposit", user: userData, amount, walletData });
     await transaction.save();
-    console.log("received transaction")
 
     const date = transaction.date;
     const type = transaction.type
