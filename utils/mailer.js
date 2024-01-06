@@ -75,7 +75,7 @@ async function welcomeMail(userEmail){
               <table width="600" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
                 <tr>
@@ -89,7 +89,7 @@ async function welcomeMail(userEmail){
                 </tr>
                 <tr>
                   <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                     <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
@@ -138,7 +138,7 @@ async function otpMail(userEmail, otp){
             <table width="600" cellspacing="0" cellpadding="0">
               <tr>
               <td class="header">
-                <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
               </td>
               </tr>
               <tr>
@@ -154,7 +154,7 @@ async function otpMail(userEmail, otp){
               </tr>
               <tr>
               <td class="footer">
-                <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                 <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
               </td>
               </tr>
@@ -203,7 +203,7 @@ async function passwordReset(userEmail){
               <table width="600" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
                 <tr>
@@ -218,7 +218,7 @@ async function passwordReset(userEmail){
                 </tr>
                 <tr>
                   <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                     <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
@@ -285,7 +285,7 @@ async function alertAdmin(email, amount, date, type){
       </head>
       <body>
         <main>
-          <img style="width: 40%;" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo" />
+          <img style="width: 40%;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo" />
           <p class="bigp">A ${type} request of $${amount} was initiated by a user with this email: ${email}, date: ${date}</p>
         </main>
       </body>
@@ -329,7 +329,7 @@ async function depositMail(fullName, amount, date, email){
               <table width="600" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
                 <tr>
@@ -343,7 +343,7 @@ async function depositMail(fullName, amount, date, email){
                 </tr>
                 <tr>
                   <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                     <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
@@ -393,7 +393,7 @@ async function withdrawalMail(fullName, amount, date, email){
               <table width="600" cellspacing="0" cellpadding="0">
                 <tr>
                   <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
                 <tr>
@@ -407,7 +407,7 @@ async function withdrawalMail(fullName, amount, date, email){
                 </tr>
                 <tr>
                   <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/assets/logo-_UlMGsPL.svg" alt="MirrorExp Logo">
+                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                     <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>

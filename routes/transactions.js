@@ -42,13 +42,11 @@ router.get('/user/:email', async(req, res) => {
   const { email } = req.params
   
   try {
-    console.log("first stage")
     let transactions = await Transaction.find({"user.email": email})
     if (!transactions || transactions.length === 0) return res.status(400).send({message: "Transactions not found..."})
 
     transactions = transactions.flat();
     transactions.sort((a, b) => b.date - a.date);
-    console.log("and i got here")
 
     res.send(transactions);
   } 
