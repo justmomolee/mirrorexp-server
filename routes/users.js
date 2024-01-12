@@ -37,6 +37,19 @@ router.get('/', async(req, res) => {
 })
 
 
+// reset password
+router.get('/reset-password/:email', async(req, res) => {
+  const { email } = req.params
+  if(!email) return res.status(400).send({message: "Email is required"})
+
+  try {
+    const emailData = await passwordReset(email)
+    if(emailData.error) return res.status(400).send({message: emailData.error})
+
+    res.send({message: "Password reset link sent successfully"})
+  } catch (error) { return res.status(500).send({message: "Something Went Wrong..."}) }
+})
+
 
 // verify user
 router.post('/mfa', async(req, res) => {
@@ -138,17 +151,6 @@ router.post('/resend-otp', async (req, res) => {
   catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
 })
 
-
-// reset password
-router.post('/reset-password', async(req, res) => {
-  const { email } = req.body
-  if(!email) return res.status(400).send({message: "Email is required"})
-
-  try {
-    passwordReset(email)
-    res.send({message: "Password reset link sent successfully"})
-  } catch (error) { return res.status(500).send({message: "Something Went Wrong..."}) }
-})
 
 
 

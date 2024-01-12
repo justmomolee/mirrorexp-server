@@ -11,7 +11,7 @@ const router  = express.Router()
 // getting all withdrawals
 router.get('/', async(req, res) => {
   try {
-    const withdrawals = await Transaction.find()
+    const withdrawals = await Transaction.find({ type: "withdrawal" })
     res.send(withdrawals)
   } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
 })
@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
       address,
     }
 
-    // Create a new Deposit instance
+    // Create a new withdrawal instance
     const transaction = new Transaction({ type: "withdrawal", user: userData, amount, walletData });
     await transaction.save();
 
@@ -83,28 +83,34 @@ router.post('/', async (req, res) => {
 // updating a withdrawal
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { from, amount, status } = req.body;
+  const { email, amount, status } = req.body;
 
-  const withdrawal = await Transaction.findById(id);
-  if (!withdrawal) return res.status(404).send({message: 'Transaction not found'})
+  let withdrawal = await Transaction.findById(id);
+  if (!withdrawal) return res.status(404).send({ message: 'Deposit not found' });
 
-  const user = await User.findOne({ email: from });
-  if (!user) return res.status(404).send({message: 'User not found'})
+  let user = await User.findOne({ email });
+  if (!user) return res.status(400).send({ message: 'Something went wrong' });
 
-  if (user.balance < amount) return res.status(400).send({message: 'Insufficient balance'})
-  if (withdrawal.status === 'successful') return res.status(400).send({message: 'Already Approved'})
-  
   try {
-    user.balance -= amount;
-    user.withdraw += amount;
     withdrawal.status = status;
+
+    if (status === 'success') {
+      user.withdraw += amount;
+    }
+
+    user = await user.save()
+    withdrawal = await withdrawal.save()
+
     const { fullName, email } = user;
     const { date } = withdrawal;
 
-    await Promise.all([user.save(), withdrawal.save()]);
-    withdrawalMail(fullName, amount, date, email)
-    res.send({message: 'Transaction updated successfully...'});
-  } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+    const emailData = await withdrawalMail(fullName, amount, date, email);
+    if (emailData.error) return res.status(400).send({ message: emailData.error });
+
+    res.send({ message: 'Withdrawal successfully updated' });
+  } catch (e) {
+    for (i in e.errors) res.status(500).send({ message: e.errors[i].message });
+  }
 });
 
 

@@ -1,19 +1,22 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config()
-const { styles } = require('./mailStyles')
 
-
-// create reusable transporter object using the default SMTP transport
-let transporter = nodemailer.createTransport({
-  host: 'mail.privateemail.com',
+var transporter = nodemailer.createTransport({
+  pool: true,
+  host: "mail.privateemail.com",
   port: 465,
-  secure: true,
   auth: {
-    user: `${process.env.SMTP_USER}`,
-    pass: `${process.env.SMTP_PASSWORD}`
+    user: "help@exodusexperts.com",
+    pass: "3099545689"
   },
-  tls: { rejectUnauthorized: false }, 
+  secure: true,
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
+
+
+
 
 
 const verifyTransporter = () => {
@@ -50,55 +53,58 @@ const sendMail = (mailData) => {
 
 
 
+
 async function welcomeMail(userEmail){
   try {
     await verifyTransporter();
 
     let mailOptions = {
-      from: `${process.env.SMTP_USER}`,
+      from: `MirrorExp help@exodusexperts.com`,
       to: `${userEmail}`,
       subject: 'Welcome!',
       html: `
       <!DOCTYPE html>
       <html>
       <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Welcome To MirrorExp</title>
-        ${styles}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Welcome to MirrorExp</title>
       </head>
-
-      <body>
-        <table width="100%" cellspacing="0" cellpadding="0">
+      <table style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4 !important;">
+        <table style="width: 100%">
           <tr>
-            <td align="center">
-              <table width="600" cellspacing="0" cellpadding="0">
+            <td>
+              <table>
+      
                 <tr>
-                  <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 150px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="content">
-                  <p class="message">Hello!,</p>
-                  <p class="message">We're thrilled to have you as part of our community. At MirrorExp, we are dedicated to providing the best services and support to our customers.</p>
-                  <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
-                  <p class="message">Best regards,</p>
-                  <p class="message">The MirrorExp Team</p>
+                  <td style="background-color: #ffffff; padding: 40px 20px;">
+                    <p style="margin-bottom: 20px;">Hello</p>
+                    <p style="margin-bottom: 20px;">We're thrilled to have you as part of our community. At MirrorExp, we are dedicated to providing the best services and support to our customers.</p>
+                    <p style="margin-bottom: 20px;">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
+                    <p style="margin-bottom: 20px;">Best regards,</p>
+                    <p style="margin-bottom: 20px;">The MirrorExp Team</p>
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
-                    <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 100px; margin-bottom: 10px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                    <p style="font-size: 12px; color: #fafafa !important; margin-bottom: 10px;">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
+      
               </table>
             </td>
           </tr>
         </table>
-      </body>
-      </html>
+      </table>
+      </html>    
       `,
     };
     
@@ -117,53 +123,55 @@ async function otpMail(userEmail, otp){
   await verifyTransporter();
     
   let mailOptions = {
-    from: `${process.env.SMTP_USER}`,
+    from: `MirrorExp help@exodusexperts.com`,
     to: `${userEmail}`,
     subject: 'Otp!',
     html: `
     <!DOCTYPE html>
     <html>
-
+    
     <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>Otp</title>
-      ${styles}
     </head>
-
-    <body>
-      <table width="100%" cellspacing="0" cellpadding="0">
+    <table style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4 !important;">
+      <table style="width: 100%">
         <tr>
-          <td align="center">
-            <table width="600" cellspacing="0" cellpadding="0">
+          <td>
+            <table>
+    
               <tr>
-              <td class="header">
-                <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
-              </td>
-              </tr>
-              <tr>
-                <td class="content">
-                  <p class="message">Hello</p>
-                  <p class="message">Your verification code is:</p>
-                  <p class="message-otp">${otp}</p>
-                  <p class="message">Copy and paste the above code into the form on the website to continue. This code expires in 5 minutes.</p>
-                  <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@pharmedore.com.</p>
-                  <p class="message">Best regards,</p>
-                  <p class="message">The MirrorExp Team</p>
+                <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                  <img style="max-width: 150px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                 </td>
               </tr>
+    
               <tr>
-              <td class="footer">
-                <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
-                <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
-              </td>
+                <td style="background-color: #ffffff; padding: 40px 20px;">
+                  <p style="margin-bottom: 20px;">Hello</p>
+                  <p style="margin-bottom: 20px;">Your verification code is:</p>
+                  <p style="margin-bottom: 20px; font-size: 22px !important; font-weight: 600 !important; color: #114000 !important; letter-spacing: 2px !important;">${otp}</p>
+                  <p style="margin-bottom: 20px;">Copy and paste the above code into the form on the website to continue. This code expires in 5 minutes.</p>
+                  <p style="margin-bottom: 20px;">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
+                  <p style="margin-bottom: 20px;">Best regards,</p>
+                  <p style="margin-bottom: 20px;">The MirrorExp Team</p>
+                </td>
               </tr>
+    
+              <tr>
+                <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                  <img style="max-width: 100px; margin-bottom: 10px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                  <p style="font-size: 12px; color: #fafafa !important; margin-bottom: 10px;">© 2023 MirrorExp Company | All Rights Reserved</p>
+                </td>
+              </tr>
+    
             </table>
           </td>
         </tr>
       </table>
-    </body>
-    </html>
+    </table>
+    </html>    
     `,
   };
   
@@ -183,50 +191,53 @@ async function passwordReset(userEmail){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `${process.env.SMTP_USER}`,
+      from: `MirrorExp help@exodusexperts.com`,
       to: `${userEmail}`,
       subject: 'Password Reset!',
       html: `
       <!DOCTYPE html>
       <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Password Reset</title>
-        ${styles}
-      </head>
       
-      <body>
-        <table width="100%" cellspacing="0" cellpadding="0">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Password Reset</title>
+      </head>
+      <table style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4 !important;">
+        <table style="width: 100%">
           <tr>
-            <td align="center">
-              <table width="600" cellspacing="0" cellpadding="0">
+            <td>
+              <table>
+      
                 <tr>
-                  <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 150px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="content">
-                    <p class="message">Hello!,</p>
-                    <p class="message">A request was sent for password reset, if this wasn't you please contact our customer service. Click the reset link below to proceed</p>
-                    <a class="cta-button" href="https://mirrorexp.co/forgotPassword/newPassword">Reset Password</a>
-                    <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
-                    <p class="message">Best regards,</p>
-                    <p class="message">The MirrorExp Team</p>
+                  <td style="background-color: #ffffff; padding: 40px 20px;">
+                    <p style="margin-bottom: 20px;">Hello</p>
+                    <p style="margin-bottom: 20px;">A request was sent for password reset, if this wasn't you please contact our customer service. Click the reset link below to proceed</p>
+                    <a style="max-width: 200px; padding: 15px 30px; border-radius: 30px; background-color: #114000 !important; color: #fafafa !important; text-decoration: none;" href="https://mirrorexp.co/forgotPassword/newPassword">Reset Password</a>
+                    <p style="margin: 20px 0;">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com</p>
+                    <p style="margin-bottom: 20px;">Best regards,</p>
+                    <p style="margin-bottom: 20px;">The MirrorExp Team</p>
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
-                    <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 100px; margin-bottom: 10px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                    <p style="font-size: 12px; color: #fafafa !important; margin-bottom: 10px;">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
+      
               </table>
             </td>
           </tr>
         </table>
-      </body>
+      </table>
       </html>    
       `,
   };
@@ -247,49 +258,52 @@ async function alertAdmin(email, amount, date, type){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `${process.env.SMTP_USER}`,
+      from: `MirrorExp help@exodusexperts.com`,
       to: `stormytek@gmail.com`,
-      subject: 'Alert Admin!',
+      subject: 'Admin Alert!',
       html: `
-      <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Alert Admin!</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <style>
+    <!DOCTYPE html>
+    <html>
     
-          main {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            background-color: #fafafa;
-            padding: 20px;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-          }
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Password Reset</title>
+    </head>
+    <table style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4 !important;">
+      <table style="width: 100%">
+        <tr>
+          <td>
+            <table>
     
-          a{
-            text-decoration: none;
-            color: inherit;
-          }
+              <tr>
+                <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                  <img style="max-width: 150px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                </td>
+              </tr>
     
-          .bigp {
-            font-size: 1.2rem;
-            line-height: 1.5;
-            font-weight: 500;
-          }
+              <tr>
+                <td style="background-color: #ffffff; padding: 40px 20px;">
+                  <p style="margin-bottom: 20px;">A ${type} request of $${amount} was initiated by a user with this email: ${email}, date: ${date}</p>
+                  <p style="margin-bottom: 20px;">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com</p>
+                  <p style="margin-bottom: 20px;">Best regards,</p>
+                  <p style="margin-bottom: 20px;">The MirrorExp Team</p>
+                </td>
+              </tr>
     
-        </style>
-      </head>
-      <body>
-        <main>
-          <img style="width: 40%;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo" />
-          <p class="bigp">A ${type} request of $${amount} was initiated by a user with this email: ${email}, date: ${date}</p>
-        </main>
-      </body>
-    </html>
+              <tr>
+                <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                  <img style="max-width: 100px; margin-bottom: 10px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                  <p style="font-size: 12px; color: #fafafa !important; margin-bottom: 10px;">© 2023 MirrorExp Company | All Rights Reserved</p>
+                </td>
+              </tr>
+    
+            </table>
+          </td>
+        </tr>
+      </table>
+    </table>
+    </html>    
       `,
   };
 
@@ -309,50 +323,53 @@ async function depositMail(fullName, amount, date, email){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `${process.env.SMTP_USER}`,
+      from: `MirrorExp help@exodusexperts.com`,
       to: `${email}`,
-      subject: 'Deposit Successful!',
+      subject: 'Deposit!',
       html: `
       <!DOCTYPE html>
       <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Deposit Successful!</title>
-        ${styles}
-      </head>
       
-      <body>
-        <table width="100%" cellspacing="0" cellpadding="0">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Deposit</title>
+      </head>
+      <table style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4 !important;">
+        <table style="width: 100%">
           <tr>
-            <td align="center">
-              <table width="600" cellspacing="0" cellpadding="0">
+            <td>
+              <table>
+      
                 <tr>
-                  <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 150px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="content">
-                    <p class="message">Dear ${fullName},</p>
-                    <p class="message">Your deposit of <strong>${amount}</strong>, ${date}, was successful! Your can now use your funds to trade on MirrorExp.</p>
-                    <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
-                    <p class="message">Best regards</p>
-                    <p class="message">The MirrorExp Team</p>
+                  <td style="background-color: #ffffff; padding: 40px 20px;">
+                    <p style="margin-bottom: 20px;">Dear ${fullName}</p>
+                    <p style="margin-bottom: 20px;">Your deposit of <strong>${amount}</strong>, ${date}, was successful! Your can now use your funds to trade on MirrorExp.</p>
+                    <p style="margin-bottom: 20px;">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com</p>
+                    <p style="margin-bottom: 20px;">Best regards,</p>
+                    <p style="margin-bottom: 20px;">The MirrorExp Team</p>
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
-                    <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 100px; margin-bottom: 10px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                    <p style="font-size: 12px; color: #fafafa !important; margin-bottom: 10px;">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
+      
               </table>
             </td>
           </tr>
         </table>
-      </body>
-      </html>
+      </table>
+      </html> 
       `,
   };
 
@@ -373,50 +390,53 @@ async function withdrawalMail(fullName, amount, date, email){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `${process.env.SMTP_USER}`,
+      from: `MirrorExp help@exodusexperts.com`,
       to: `${email}`,
-      subject: 'Withdrawal Successful!',
+      subject: 'Withdrawal!',
       html: `
       <!DOCTYPE html>
       <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Withdrawal Successful!</title>
-        ${styles}
-      </head>
       
-      <body>
-        <table width="100%" cellspacing="0" cellpadding="0">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Withdrawal</title>
+      </head>
+      <table style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4 !important;">
+        <table style="width: 100%">
           <tr>
-            <td align="center">
-              <table width="600" cellspacing="0" cellpadding="0">
+            <td>
+              <table>
+      
                 <tr>
-                  <td class="header">
-                    <img class="logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 150px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="content">
-                    <p class="message">Dear ${fullName},</p>
-                    <p class="message">Your Withdrawal of <strong>${amount}</strong>, ${date}, was successful! Thanks for choosing MirrorExp!</p>
-                    <p class="message">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com.</p>
-                    <p class="message">Best regards</p>
-                    <p class="message">The MirrorExp Team</p>
+                  <td style="background-color: #ffffff; padding: 40px 20px;">
+                    <p style="margin-bottom: 20px;">Dear ${fullName}</p>
+                    <p style="margin-bottom: 20px;">Your Withdrawal of <strong>${amount}</strong>, ${date}, was successful! Thanks for choosing MirrorExp!</p>
+                    <p style="margin-bottom: 20px;">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com</p>
+                    <p style="margin-bottom: 20px;">Best regards,</p>
+                    <p style="margin-bottom: 20px;">The MirrorExp Team</p>
                   </td>
                 </tr>
+      
                 <tr>
-                  <td class="footer">
-                    <img class="footer-logo" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
-                    <p class="footer-message">© 2023 MirrorExp Company | All Rights Reserved</p>
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 100px; margin-bottom: 10px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                    <p style="font-size: 12px; color: #fafafa !important; margin-bottom: 10px;">© 2023 MirrorExp Company | All Rights Reserved</p>
                   </td>
                 </tr>
+      
               </table>
             </td>
           </tr>
         </table>
-      </body>
-      </html>
+      </table>
+      </html> 
       `,
   };
 

@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    maxLength: 15,
+    maxLength: 50,
     default: "",
   },
   password: {

@@ -60,8 +60,8 @@ const transactionSchema = new mongoose.Schema({
       default: '',
     },
     interest: {
-      type: String,
-      default: '',
+      type: Number,
+      default: 0,
     },
   }
 });

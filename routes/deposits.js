@@ -70,26 +70,34 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { email, amount, status } = req.body;
 
-  const deposit = await Transaction.findById(id);
-  if (!deposit) return res.status(404).send({message: 'Deposit not found'})
+  let deposit = await Transaction.findById(id);
+  if (!deposit) return res.status(404).send({ message: 'Deposit not found' });
 
-  const user = await User.findOne({ email: email });
-  if (!user) return res.status(400).send({message: 'Something went wrong'})
-  
+  let user = await User.findOne({ email });
+  if (!user) return res.status(400).send({ message: 'Something went wrong' });
+
   try {
-    const [updatedDeposit, updatedUser] = await Promise.all([
-      Transaction.findByIdAndUpdate(id, { amount, status }, { new: true }),
-      User.findOneAndUpdate({ email }, { $inc: { deposit: amount } }, { new: true })
-    ]);
+    deposit.status = status;
 
-    if (!updatedDeposit || !updatedUser) throw new Error('Failed to update deposit and user')
-    const { fullName, email } = updatedUser;
-    const { date } = updatedDeposit;
+    if (status === 'success') {
+      user.deposit += amount;
+    }
 
-    depositMail(fullName, amount, date, email)
-    res.send(updatedDeposit);
-  } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+    user = await user.save()
+    deposit = await deposit.save()
+
+    const { fullName, email } = user;
+    const { date } = deposit;
+
+    const emailData = await depositMail(fullName, amount, date, email);
+    if (emailData.error) return res.status(400).send({ message: emailData.error });
+
+    res.send({ message: 'Deposit successfully updated' });
+  } catch (e) {
+    for (i in e.errors) res.status(500).send({ message: e.errors[i].message });
+  }
 });
+
 
 
 module.exports = router;
