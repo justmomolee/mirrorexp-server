@@ -49,35 +49,50 @@ router.post('/', async (req, res) => {
   const { id, amount, convertedAmount, coinName, network, address } = req.body;
 
   const user = await User.findById(id);
-  if (!user) return res.status(400).send({message: 'Something went wrong'})
-  
+  if (!user) return res.status(400).send({ message: 'Something went wrong' });
+
+  // Check if there's any pending withdrawal for the user
+  const pendingWithdrawal = await Transaction.findOne({
+    'user.id': id,
+    status: 'pending',
+    type: 'withdrawal',
+  });
+
+  if (pendingWithdrawal) {
+    return res.status(400).send({ message: 'You have a pending withdrawal. Please wait for approval.' });
+  }
+
   try {
     const userData = {
-      id: user._id, email: user.email, name: user.fullName,
-    }
+      id: user._id,
+      email: user.email,
+      name: user.fullName,
+    };
 
     const walletData = {
       convertedAmount,
       coinName,
       network,
       address,
-    }
+    };
 
     // Create a new withdrawal instance
-    const transaction = new Transaction({ type: "withdrawal", user: userData, amount, walletData });
+    const transaction = new Transaction({ type: 'withdrawal', user: userData, amount, walletData });
     await transaction.save();
 
     const date = transaction.date;
-    const type = transaction.type
+    const type = transaction.type;
     const email = transaction.user.email;
 
-  
-    const emailData = await alertAdmin(email, amount, date, type)
-    if(emailData.error) return res.status(400).send({message: emailData.error})
+    const emailData = await alertAdmin(email, amount, date, type);
+    if (emailData.error) return res.status(400).send({ message: emailData.error });
 
-    res.send({message: 'Withdraw successful and pending approval...'});
-  } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+    res.send({ message: 'Withdraw successful and pending approval...' });
+  } catch (e) {
+    for (i in e.errors) res.status(500).send({ message: e.errors[i].message });
+  }
 });
+
 
 
 // updating a withdrawal

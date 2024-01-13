@@ -29,40 +29,57 @@ router.get('/user/:email', async(req, res) => {
 })
 
 
+
+
 // making a deposit
 router.post('/', async (req, res) => {
   const { id, amount, convertedAmount, coinName } = req.body;
 
   const user = await User.findById(id);
-  if (!user) return res.status(400).send({message: 'Something went wrong'})
-  
+  if (!user) return res.status(400).send({ message: 'Something went wrong' });
+
+  // Check if there's any pending deposit for the user
+  const pendingDeposit = await Transaction.findOne({
+    'user.id': id,
+    status: 'pending',
+    type: 'deposit',
+  });
+
+  if (pendingDeposit) {
+    return res.status(400).send({ message: 'You have a pending deposit. Please wait for approval.' });
+  }
+
   try {
     const userData = {
-      id: user._id, email: user.email, name: user.fullName,
-    }
+      id: user._id,
+      email: user.email,
+      name: user.fullName,
+    };
 
     const walletData = {
       convertedAmount,
       coinName,
-      network: "",
-      address: "",
-    }
+      network: '',
+      address: '',
+    };
 
-    // Create a new Transaction instance
-    const transaction = new Transaction({ type: "deposit", user: userData, amount, walletData });
+    // Create a new deposit instance
+    const transaction = new Transaction({ type: 'deposit', user: userData, amount, walletData });
     await transaction.save();
 
     const date = transaction.date;
-    const type = transaction.type
+    const type = transaction.type;
     const email = transaction.user.email;
 
-  
-    const emailData = await alertAdmin(email, amount, date, type)
-    if(emailData.error) return res.status(400).send({message: emailData.error})
+    const emailData = await alertAdmin(email, amount, date, type);
+    if (emailData.error) return res.status(400).send({ message: emailData.error });
 
-    res.send({message: 'Deposit successful and pending approval...'});
-  } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+    res.send({ message: 'Deposit successful and pending approval...' });
+  } catch (e) {
+    for (i in e.errors) res.status(500).send({ message: e.errors[i].message });
+  }
 });
+
 
 
 // updating a deposit
