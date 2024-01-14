@@ -5,13 +5,16 @@ const { default: mongoose } = require('mongoose')
 
 const router  = express.Router()
 
-// getting all trades
-router.get('/', async(req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const trades = await Transaction.find({type: 'trade'})
-    res.send(trades)
-  } catch (x) { return res.status(500).send({message: "Something Went Wrong..."}) }
-})
+    const trades = await Transaction.find({ type: 'trade' }).sort({ date: 'asc' });
+    res.send(trades);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Something Went Wrong..." });
+  }
+});
+
 
 
 // making a trade
