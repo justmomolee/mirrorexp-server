@@ -49,7 +49,8 @@ router.post('/toTrade', async (req, res) => {
       user: {
         id, email: user.email,
         name: user.fullName
-      }
+      },
+      status: "success"
     });
 
     await Promise.all([user.save(), transaction.save()]);
@@ -62,29 +63,35 @@ router.post('/toTrade', async (req, res) => {
 
 // making a transaction from trade to deposit
 router.post('/fromTrade', async (req, res) => {
-  const { type, from, to, amount, status, method } = req.body;
-  const { error } = validateTransaction(req.body);
+  const { id, amount } = req.body;
 
-  if (error) return res.status(400).send({message: error.details[0].message})
-
-  const user = await User.findOne({ email: from });
+  const user = await User.findById(id);
   if (!user) return res.status(404).send({message: 'User not found'})
-  const { deposit, trade } = user
-  const newTrade = Number(trade) - Number(amount)
-  const newDeposit = Number(deposit) + Number(amount)
 
-  if (Number(trade) < Number(amount)) return res.status(400).send({message: 'Insufficient deposit'})
-  
   try {
+    const { deposit, trade } = user 
+
+    const newTrade = Number(trade) - Number(amount)
+
+    if (Number(trade) < Number(amount)) return res.status(400).send({message: 'Insufficient trade Balance, fund your account and try again'})
+
     user.set({
-      trade: newTrade,
-      deposit: newDeposit
+      deposit: Number(deposit) + Number(amount),
+      trade: newTrade
     });
 
-    const transaction = new Transaction({ type, from, to, amount, status, method });
-    await Promise.all([user.save(), transaction.save()]);
 
-    res.send(user);
+    const transaction = new Transaction({ 
+      type: "transfer", amount, 
+      user: {
+        id, email: user.email,
+        name: user.fullName
+      },
+      status: "success"
+    });
+
+    await Promise.all([user.save(), transaction.save()]);
+    res.send({message: "success"});
   } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
 });
 
