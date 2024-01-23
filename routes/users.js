@@ -28,13 +28,14 @@ router.get('/:id', async(req, res) => {
 })
 
 
-// getting all users
-router.get('/', async(req, res) => {
+// Getting all users sorted by creation date (newest first)
+router.get('/', async (req, res) => {
   try {
-    const users = await User.find()
-    res.send(users)
-  } catch (x) { return res.status(500).send({message: "Something Went Wrong..."}) }
-})
+    const users = await User.find().sort({ createdAt: -1 });
+    res.send(users);
+  } catch (error) { return res.status(500).send({ message: "Something Went Wrong..." }) }
+});
+
 
 
 // reset password
