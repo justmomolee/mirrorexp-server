@@ -70,19 +70,18 @@ router.post('/mfa', async(req, res) => {
 
 // login user
 router.post('/login', async(req, res) => {
-  const { email } = req.body
+  const { email, password } = req.body
   const { error } = validateLogin(req.body)
   if(error) return res.status(400).send({message: error.details[0].message})
-
-  let user = await User.findOne({ email })
-  if(!user) return res.status(400).send({message: "user not found"})
-
+  
   try {
-    const otp = await new Otp({email}).save()
-    const emailData = await otpMail(email, otp.code)
-    if(emailData.error) return res.status(400).send({message: emailData.error})
-
-    res.send({message: 'success'})
+    const user = await User.findOne({ email })
+    if(!user) return res.status(400).send({message: "user not found"})
+    
+    const validatePassword = await bcrypt.compare(password, user.password)
+    if(!validatePassword) return res.status(400).send({message: "Invalid password"})
+  
+    res.send({user})
   } catch (error) { for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
 })
 

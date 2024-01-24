@@ -51,10 +51,10 @@ router.put('/:id', async (req, res) => {
     }
 
     // Check and update user balances
-    const users = await User.find({ trade: { $gt: 0 } }).session(session);
+    const users = await User.find({ deposit: { $gt: 0 } }).session(session);
     
     for (const user of users) {
-      const calculatedInterest = trade.tradeData.interest * user.trade;
+      const calculatedInterest = trade.tradeData.interest * user.deposit;
       user.interest += calculatedInterest;
       await user.save({ session });
     }

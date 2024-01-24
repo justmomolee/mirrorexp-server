@@ -67,11 +67,6 @@ const userSchema = new mongoose.Schema({
     default: 0,
     minLength: 0,
   },
-  trade: {
-    type: Number,
-    default: 0,
-    minLength: 0,
-  },
   withdraw: {
     type: Number,
     default: 0,

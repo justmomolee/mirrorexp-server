@@ -48,7 +48,6 @@ app.use("/api/users", require('./routes/users'));
 app.use("/api/transactions", require('./routes/transactions'));
 app.use("/api/deposits", require('./routes/deposits'));
 app.use("/api/withdrawals", require('./routes/withdrawals'));
-app.use("/api/transfers", require('./routes/transfers'));
 app.use("/api/trades", require('./routes/trades'));
 app.use("/api/utils", require("./routes/utils"));
 app.use("/api/kycs", require("./routes/kycs"));
