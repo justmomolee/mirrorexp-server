@@ -155,15 +155,16 @@ router.post('/resend-otp', async (req, res) => {
 
 
 // new password
-router.post('/new-password', async(req, res) => {
-  const { email, newPassword } = req.body
+router.put('/new-password', async(req, res) => {
+  const { email, password } = req.body
   if(!email) return res.status(400).send({message: "Email is required"})
 
   let user = await User.findOne({ email })
   if(!user) return res.status(400).send({message: "Invalid email"})
+
   try {
     const salt = await bcrypt.genSalt(10)
-    user.password = await bcrypt.hash(newPassword, salt)
+    user.password = await bcrypt.hash(password, salt)
     user = await user.save()
     res.send({message: "Password changed successfully"})
   } catch (error) { return res.status(500).send({message: "Something Went Wrong..."}) }
