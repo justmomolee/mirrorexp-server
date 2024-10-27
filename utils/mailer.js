@@ -6,8 +6,8 @@ var transporter = nodemailer.createTransport({
   host: "mail.privateemail.com",
   port: 465,
   auth: {
-    user: "help@exodusexperts.com",
-    pass: "3099545689"
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD
   },
   secure: true,
   tls: {
@@ -59,7 +59,7 @@ async function welcomeMail(userEmail){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `MirrorExp help@exodusexperts.com`,
+      from: `MirrorExp ${process.env.SMTP_USER}`,
       to: `${userEmail}`,
       subject: 'Welcome!',
       html: `
@@ -123,7 +123,7 @@ async function otpMail(userEmail, otp){
   await verifyTransporter();
     
   let mailOptions = {
-    from: `MirrorExp help@exodusexperts.com`,
+    from: `MirrorExp ${process.env.SMTP_USER}`,
     to: `${userEmail}`,
     subject: 'Otp!',
     html: `
@@ -191,7 +191,7 @@ async function passwordReset(userEmail){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `MirrorExp help@exodusexperts.com`,
+      from: `MirrorExp ${process.env.SMTP_USER}`,
       to: `${userEmail}`,
       subject: 'Password Reset!',
       html: `
@@ -258,8 +258,8 @@ async function alertAdmin(email, amount, date, type){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `MirrorExp help@exodusexperts.com`,
-      to: `stormytek@gmail.com`,
+      from: `MirrorExp ${process.env.SMTP_USER}`,
+      to: `support@mirrorexp.com`,
       subject: 'Admin Alert!',
       html: `
     <!DOCTYPE html>
@@ -323,7 +323,7 @@ async function depositMail(fullName, amount, date, email){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `MirrorExp help@exodusexperts.com`,
+      from: `MirrorExp ${process.env.SMTP_USER}`,
       to: `${email}`,
       subject: 'Deposit!',
       html: `
@@ -390,7 +390,7 @@ async function withdrawalMail(fullName, amount, date, email){
     await verifyTransporter();
 
     let mailOptions = {
-      from: `MirrorExp help@exodusexperts.com`,
+      from: `MirrorExp ${process.env.SMTP_USER}`,
       to: `${email}`,
       subject: 'Withdrawal!',
       html: `
