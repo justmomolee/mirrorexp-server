@@ -1,5 +1,6 @@
 const express = require("express");
 const { Util } = require("../models/util");
+const { multiMails } = require("../utils/mailer");
 
 const router = express.Router();
 
@@ -48,6 +49,31 @@ router.delete("/:id", async (req, res) => {
 		res.status(200).send(util);
 	} catch (error) {
 		for (i in error.errors) res.status(500).send(error.errors[i].message);
+	}
+});
+
+// POST route to send mail
+router.post("/send-mail", async (req, res) => {
+	const { emails, subject, message } = req.body;
+
+	if (!emails || !Array.isArray(emails) || emails.length === 0) {
+		return res.status(400).json({ message: "A valid array of emails is required" });
+	}
+
+	if (!subject || !message) {
+		return res.status(400).json({ message: "Subject and message are required" });
+	}
+
+	try {
+		const emailData = await multiMails(emails, subject, message);
+		if (emailData.error) return res.status(400).send({ message: emailData.error });
+
+		res.status(200).json({
+			message: "Emails sent successfully",
+		});
+	} catch (error) {
+		console.error("Error sending emails:", error);
+		res.status(500).json({ message: "Failed to send emails", error });
 	}
 });
 

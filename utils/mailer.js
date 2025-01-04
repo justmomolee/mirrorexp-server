@@ -1,68 +1,39 @@
-const nodemailer = require('nodemailer');
-require('dotenv').config()
+const { transporter } = require("./emailConfig");
 
-var transporter = nodemailer.createTransport({
-  pool: true,
-  host: "mail.privateemail.com",
-  port: 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD
-  },
-  secure: true,
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+require("dotenv").config();
 
-
-
-
-
-const verifyTransporter = () => {
-    return new Promise((resolve, reject) => {
-    transporter.verify((error, success) => {
-      if (error) {
-        console.log("verify Error" ,error);
-        reject(error);
-      } else {
-        console.log("Server is ready to take our messages");
-        resolve(success);
-      }
-    });
-  });
-  };
-
-  
-
-  
 const sendMail = (mailData) => {
-    return new Promise((resolve, reject) => {
-    transporter.sendMail(mailData, (err, info) => {
-      if (err) {
-        console.error(err);
-        reject(err);
-      } else {
-        console.log(info);
-        resolve(info);
-      }
-    });
-  });
+	return new Promise((resolve, reject) => {
+		transporter.sendMail(mailData, (err, info) => {
+			if (err) {
+				console.error(err);
+				reject(err);
+			} else {
+				console.log(info);
+				resolve(info);
+			}
+		});
+	});
 };
 
+const sendMailWithRetry = async (mailData, retries = 3) => {
+	for (let i = 0; i < retries; i++) {
+		try {
+			return await sendMail(mailData);
+		} catch (error) {
+			if (i === retries - 1) throw error;
+			console.log(`Retrying sendMail... Attempt ${i + 1}`);
+		}
+	}
+};
 
-
-
-
-async function welcomeMail(userEmail){
-  try {
-    await verifyTransporter();
-
-    let mailOptions = {
-      from: `MirrorExp ${process.env.SMTP_USER}`,
-      to: `${userEmail}`,
-      subject: 'Welcome!',
-      html: `
+async function welcomeMail(userEmail) {
+	try {
+		let mailOptions = {
+			from: `MirrorExp ${process.env.SMTP_USER}`,
+			to: `${userEmail}`,
+			subject: "Welcome!",
+			html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -106,27 +77,22 @@ async function welcomeMail(userEmail){
       </table>
       </html>    
       `,
-    };
-    
-  
-const result = await sendMail(mailOptions)
-  return result
-} catch (error) {
-  return({ error: "An error occurred while sending the email" })
+		};
+
+		const result = await sendMailWithRetry(mailOptions);
+		return result;
+	} catch (error) {
+		return { error: "An error occurred while sending the email" };
+	}
 }
-}
 
-
-
-async function otpMail(userEmail, otp){
-  try {
-  await verifyTransporter();
-    
-  let mailOptions = {
-    from: `MirrorExp ${process.env.SMTP_USER}`,
-    to: `${userEmail}`,
-    subject: 'Otp!',
-    html: `
+async function otpMail(userEmail, otp) {
+	try {
+		let mailOptions = {
+			from: `MirrorExp ${process.env.SMTP_USER}`,
+			to: `${userEmail}`,
+			subject: "Otp!",
+			html: `
     <!DOCTYPE html>
     <html>
     
@@ -173,28 +139,23 @@ async function otpMail(userEmail, otp){
     </table>
     </html>    
     `,
-  };
-  
+		};
 
-const result = await sendMail(mailOptions)
-  return result
-} catch (error) {
-  return({ error: "An error occurred while sending the email" })
+		const result = await sendMailWithRetry(mailOptions);
+		return result;
+	} catch (error) {
+		return { error: "An error occurred while sending the email" };
+	}
 }
-}
-
-
 
 // Password reset mail
-async function passwordReset(userEmail){
-  try {
-    await verifyTransporter();
-
-    let mailOptions = {
-      from: `MirrorExp ${process.env.SMTP_USER}`,
-      to: `${userEmail}`,
-      subject: 'Password Reset!',
-      html: `
+async function passwordReset(userEmail) {
+	try {
+		let mailOptions = {
+			from: `MirrorExp ${process.env.SMTP_USER}`,
+			to: `${userEmail}`,
+			subject: "Password Reset!",
+			html: `
       <!DOCTYPE html>
       <html>
       
@@ -240,28 +201,23 @@ async function passwordReset(userEmail){
       </table>
       </html>    
       `,
-  };
+		};
 
-
-const result = await sendMail(mailOptions)
-  return result
-} catch (error) {
-  return({ error: "An error occurred while sending the email" })
+		const result = await sendMailWithRetry(mailOptions);
+		return result;
+	} catch (error) {
+		return { error: "An error occurred while sending the email" };
+	}
 }
-}
-
-
 
 // Alert Admin! mail
-async function alertAdmin(email, amount, date, type){
-  try {
-    await verifyTransporter();
-
-    let mailOptions = {
-      from: `MirrorExp ${process.env.SMTP_USER}`,
-      to: `support@mirrorexp.com`,
-      subject: 'Admin Alert!',
-      html: `
+async function alertAdmin(email, amount, date, type) {
+	try {
+		let mailOptions = {
+			from: `MirrorExp ${process.env.SMTP_USER}`,
+			to: `support@mirrorexp.com`,
+			subject: "Admin Alert!",
+			html: `
     <!DOCTYPE html>
     <html>
     
@@ -305,28 +261,23 @@ async function alertAdmin(email, amount, date, type){
     </table>
     </html>    
       `,
-  };
+		};
 
-
-const result = await sendMail(mailOptions)
-  return result
-} catch (error) {
-  return({ error: "An error occurred while sending the email" })
+		const result = await sendMailWithRetry(mailOptions);
+		return result;
+	} catch (error) {
+		return { error: "An error occurred while sending the email" };
+	}
 }
-}
-
-
 
 // deposit mail
-async function depositMail(fullName, amount, date, email){
-  try {
-    await verifyTransporter();
-
-    let mailOptions = {
-      from: `MirrorExp ${process.env.SMTP_USER}`,
-      to: `${email}`,
-      subject: 'Deposit!',
-      html: `
+async function depositMail(fullName, amount, date, email) {
+	try {
+		let mailOptions = {
+			from: `MirrorExp ${process.env.SMTP_USER}`,
+			to: `${email}`,
+			subject: "Deposit!",
+			html: `
       <!DOCTYPE html>
       <html>
       
@@ -371,29 +322,23 @@ async function depositMail(fullName, amount, date, email){
       </table>
       </html> 
       `,
-  };
+		};
 
-
-const result = await sendMail(mailOptions)
-  return result
-} catch (error) {
-  return({ error: "An error occurred while sending the email" })
+		const result = await sendMailWithRetry(mailOptions);
+		return result;
+	} catch (error) {
+		return { error: "An error occurred while sending the email" };
+	}
 }
-}
-
-
-
 
 // withdrawal mail
-async function withdrawalMail(fullName, amount, date, email){
-  try {
-    await verifyTransporter();
-
-    let mailOptions = {
-      from: `MirrorExp ${process.env.SMTP_USER}`,
-      to: `${email}`,
-      subject: 'Withdrawal!',
-      html: `
+async function withdrawalMail(fullName, amount, date, email) {
+	try {
+		let mailOptions = {
+			from: `MirrorExp ${process.env.SMTP_USER}`,
+			to: `${email}`,
+			subject: "Withdrawal!",
+			html: `
       <!DOCTYPE html>
       <html>
       
@@ -438,16 +383,75 @@ async function withdrawalMail(fullName, amount, date, email){
       </table>
       </html> 
       `,
-  };
+		};
 
-
-const result = await sendMail(mailOptions)
-  return result
-} catch (error) {
-  return({ error: "An error occurred while sending the email" })
+		const result = await sendMailWithRetry(mailOptions);
+		return result;
+	} catch (error) {
+		return { error: "An error occurred while sending the email" };
+	}
 }
-}
 
+// withdrawal mail
+async function multiMails(emails, subject, message) {
+  console.log(emails, subject, message)
+	try {
+		let mailOptions = {
+			from: `MirrorExp ${process.env.SMTP_USER}`,
+			to: emails,
+			subject: subject,
+			html: `
+      <!DOCTYPE html>
+      <html>
+      
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Withdrawal</title>
+      </head>
+      <table style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4 !important;">
+        <table style="width: 100%">
+          <tr>
+            <td>
+              <table>
+      
+                <tr>
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 150px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                  </td>
+                </tr>
+      
+                <tr>
+                  <td style="background-color: #ffffff; padding: 40px 20px;">
+                    <p style="margin-bottom: 20px;">${message}</p>
+                    <p style="margin-bottom: 20px;">If you have any questions or need assistance, feel free to reach out to our support team at support@mirrorexp.com</p>
+                    <p style="margin-bottom: 20px;">Best regards,</p>
+                    <p style="margin-bottom: 20px;">The MirrorExp Team</p>
+                  </td>
+                </tr>
+      
+                <tr>
+                  <td style="background-color: #114000 !important; padding: 20px; text-align: center;">
+                    <img style="max-width: 100px; margin-bottom: 10px;" src="https://mirror-exp-client.vercel.app/logo3.png" alt="MirrorExp Logo">
+                    <p style="font-size: 12px; color: #fafafa !important; margin-bottom: 10px;">© 2023 MirrorExp Company | All Rights Reserved</p>
+                  </td>
+                </tr>
+      
+              </table>
+            </td>
+          </tr>
+        </table>
+      </table>
+      </html> 
+      `,
+		};
+
+		const result = await sendMailWithRetry(mailOptions);
+		return result;
+	} catch (error) {
+		return { error: "An error occurred while sending the email" };
+	}
+}
 
 exports.otpMail = otpMail;
 exports.alertAdmin = alertAdmin;
@@ -455,3 +459,4 @@ exports.welcomeMail = welcomeMail;
 exports.passwordReset = passwordReset;
 exports.depositMail = depositMail;
 exports.withdrawalMail = withdrawalMail;
+exports.multiMails = multiMails;
