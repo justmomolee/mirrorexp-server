@@ -1,10 +1,11 @@
-const bcrypt = require('bcrypt')
-const express = require('express')
-const { User, validateUser, validateLogin } = require("../models/user")
-const { passwordReset, welcomeMail, otpMail } = require("../utils/mailer")
-const Otp = require('../models/otp')
-const speakeasy = require('speakeasy')
-const qrcode = require('qrcode')
+import bcrypt from "bcrypt";
+import express from "express";
+import { User, validateUser, validateLogin } from "../models/user.js";
+import { passwordReset, welcomeMail, otpMail } from "../utils/mailer.js";
+import { Otp } from "../models/otp.js";
+import speakeasy from "speakeasy";
+import qrcode from "qrcode";
+
 
 const router  = express.Router()
 
@@ -209,4 +210,4 @@ router.put("/update-profile", async (req, res) => {
 })
 
 
-module.exports = router
+export default router;

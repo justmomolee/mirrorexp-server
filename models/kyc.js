@@ -1,5 +1,6 @@
-const Joi = require("joi");
-const mongoose = require("mongoose");
+import Joi from "joi";
+import mongoose from "mongoose";
+
 
 
 // Kyc schema
@@ -31,11 +32,11 @@ const kycSchema = new mongoose.Schema({
 
 
 // kyc model
-const Kyc = mongoose.model("Kyc", kycSchema);
+export const Kyc = mongoose.model("Kyc", kycSchema);
 
 
 // validate Kyc
-function validateKyc(kyc) {
+export function validateKyc(kyc) {
   const schema = Joi.object({
     name: Joi.string().min(5).max(225).required(),
     email: Joi.string().min(5).max(225).required(),
@@ -44,8 +45,3 @@ function validateKyc(kyc) {
 
   return schema.validate(kyc);
 }
-
-
-// exports
-exports.Kyc = Kyc;
-exports.validateKyc = validateKyc;

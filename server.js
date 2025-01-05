@@ -1,33 +1,39 @@
-const express = require("express");
-const mongoose = require("mongoose");
+import express from "express";
+import mongoose from "mongoose";
+import http from "http";
+import cors from "cors";
+import dotenv from "dotenv";
+import { verifyTransporter } from "./utils/emailConfig.js";
+import usersRoutes from "./routes/users.js";
+import transactionsRoutes from "./routes/transactions.js";
+import depositsRoutes from "./routes/deposits.js";
+import withdrawalsRoutes from "./routes/withdrawals.js";
+import tradesRoutes from "./routes/trades.js";
+import utilsRoutes from "./routes/utils.js";
+import kycsRoutes from "./routes/kycs.js";
+
+dotenv.config();
+
 const app = express();
-const http = require("http");
 const server = http.createServer(app);
-const cors = require("cors");
-require("dotenv").config();
 
-const { verifyTransporter } = require("./utils/emailConfig.js");
-
-//verify transporter
-async function verifyTP() {
+// Verify transporter
+(async function verifyTP() {
 	await verifyTransporter();
-};
+})()
 
-verifyTP()
-
-// checking for required ENV
+// Checking for required ENV variables
 if (!process.env.JWT_PRIVATE_KEY) {
-	console.log("Fatal Error: jwtPrivateKey is required");
+	console.error("Fatal Error: jwtPrivateKey is required");
 	process.exit(1);
 }
 
-// connecting to MongoDB
+// Connecting to MongoDB
 mongoose.set("strictQuery", false);
 mongoose
 	.connect(process.env.MONGODB_URL)
 	.then(() => console.log("Connected to MongoDB..."))
-	.catch((e) => console.log("Error connecting to MongoDB"));
-
+	.catch((e) => console.error("Error connecting to MongoDB:", e));
 
 // CORS middleware
 app.use((req, res, next) => {
@@ -35,19 +41,19 @@ app.use((req, res, next) => {
 	next();
 });
 
-// middlewares
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use("/api/users", require("./routes/users"));
-app.use("/api/transactions", require("./routes/transactions"));
-app.use("/api/deposits", require("./routes/deposits"));
-app.use("/api/withdrawals", require("./routes/withdrawals"));
-app.use("/api/trades", require("./routes/trades"));
-app.use("/api/utils", require("./routes/utils"));
-app.use("/api/kycs", require("./routes/kycs"));
+app.use("/api/users", usersRoutes);
+app.use("/api/transactions", transactionsRoutes);
+app.use("/api/deposits", depositsRoutes);
+app.use("/api/withdrawals", withdrawalsRoutes);
+app.use("/api/trades", tradesRoutes);
+app.use("/api/utils", utilsRoutes);
+app.use("/api/kycs", kycsRoutes);
 
-// listening to port
-const PORT = !process.env.PORT ? 5000 : process.env.PORT;
+// Listening to port
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
 app.get("/", (req, res) => {

@@ -1,7 +1,6 @@
-const express = require('express')
-const { Transaction } = require("../models/transaction")
-const { User } = require("../models/user")
-const { default: mongoose } = require('mongoose')
+import express from 'express';
+import { Transaction } from '../models/transaction.js';
+import { User } from '../models/user.js';
 
 const router  = express.Router()
 
@@ -19,11 +18,11 @@ router.get('/', async (req, res) => {
 
 // making a trade
 router.post('/', async (req, res) => {
-  const { package, interest } = req.body;
+  const { package:plan, interest } = req.body;
   
   try {
     const trade = new Transaction({ 
-      tradeData: { package, interest},
+      tradeData: { package: plan, interest},
       type: "trade", amount: 0,
     });
 
@@ -92,4 +91,4 @@ router.delete('/:id', async (req, res) => {
 
 
 
-module.exports = router
+export default router;

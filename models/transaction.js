@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 
 // transaction schema
@@ -66,8 +66,5 @@ const transactionSchema = new mongoose.Schema({
   }
 });
 
-const Transaction = mongoose.model("Transaction", transactionSchema);
-
-exports.Transaction = Transaction;
-
+export const Transaction = mongoose.model("Transaction", transactionSchema);
 

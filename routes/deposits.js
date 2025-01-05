@@ -1,7 +1,7 @@
-const express = require('express')
-const { Transaction } = require("../models/transaction")
-const { User } = require("../models/user")
-const { alertAdmin, depositMail } = require("../utils/mailer")
+import express from 'express';
+import { Transaction } from '../models/transaction.js';
+import { User } from '../models/user.js';
+import { alertAdmin, depositMail } from '../utils/mailer.js';
 
 const router  = express.Router()
 
@@ -117,4 +117,4 @@ router.put('/:id', async (req, res) => {
 
 
 
-module.exports = router;
+export default router;

@@ -1,7 +1,8 @@
-const nodemailer = require("nodemailer");
-require("dotenv").config();
+import nodemailer from "nodemailer";
+import dotenv from 'dotenv';
+dotenv.config();
 
-const transporter = nodemailer.createTransport({
+export const transporter = nodemailer.createTransport({
 	pool: true,
 	host: "mail.privateemail.com",
 	port: 465,
@@ -15,7 +16,7 @@ const transporter = nodemailer.createTransport({
 	},
 });
 
-const verifyTransporter = async (retries = 3, delay = 5000) => {
+export const verifyTransporter = async (retries = 3, delay = 5000) => {
 	for (let attempt = 1; attempt <= retries; attempt++) {
 		try {
 			await transporter.verify();
@@ -37,6 +38,3 @@ const verifyTransporter = async (retries = 3, delay = 5000) => {
 		}
 	}
 };
-
-exports.transporter = transporter;
-exports.verifyTransporter = verifyTransporter;

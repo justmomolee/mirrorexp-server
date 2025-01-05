@@ -1,6 +1,5 @@
-const express = require('express')
-const { Kyc, validateKyc } = require("../models/kyc")
-const { User } = require("../models/user")
+import express from 'express';
+import { User } from '../models/user.js';
 
 const router  = express.Router()
 
@@ -68,4 +67,4 @@ router.put('/', async (req, res) => {
 });
 
 
-module.exports = router;
+export default router;

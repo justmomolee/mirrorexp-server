@@ -1,5 +1,5 @@
-const express = require('express')
-const { Transaction } = require("../models/transaction")
+import express from 'express';
+import { Transaction } from '../models/transaction.js';
 
 const router  = express.Router()
 
@@ -96,4 +96,4 @@ router.delete('/:id', async (req, res) => {
 
 
 
-module.exports = router
+export default router;

@@ -1,6 +1,6 @@
-const express = require("express");
-const { Util } = require("../models/util");
-const { multiMails } = require("../utils/mailer");
+import express from 'express';
+import { Util } from '../models/util.js';
+import { multiMails } from '../utils/mailer.js';
 
 const router = express.Router();
 
@@ -77,4 +77,4 @@ router.post("/send-mail", async (req, res) => {
 	}
 });
 
-module.exports = router;
+export default router;

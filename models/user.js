@@ -1,9 +1,9 @@
-const Joi = require("joi");
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
+import Joi from "joi";
+import mongoose from "mongoose";
+import jwt from"jsonwebtoken";
 
 
-const userSchema = new mongoose.Schema({
+export const userSchema = new mongoose.Schema({
   fullName: {
     type: String,
     maxLength: 20,
@@ -110,10 +110,10 @@ userSchema.methods.genAuthToken = function(){
   return jwt.sign({_id: this._id, username: this.username, isAdmin: this.isAdmin}, process.env.JWT_PRIVATE_KEY)
 }
 
-const User = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
 
 
-const  validateUser = (user) => {
+export const  validateUser = (user) => {
   const schema = {
     username: Joi.string().min(3).max(20).required(),
     email: Joi.string().min(5).max(225).required(),
@@ -125,7 +125,7 @@ const  validateUser = (user) => {
 }
 
 
-const  validateLogin = (user) => {
+export const  validateLogin = (user) => {
   const schema = {
     email: Joi.string().min(5).max(225).email().required(),
     password: Joi.string().min(5).max(20).required(),
@@ -133,9 +133,3 @@ const  validateLogin = (user) => {
 
   return Joi.validate(user, schema)
 }
-
-
-exports.validateUser = validateUser;
-exports.validateLogin = validateLogin;
-exports.User = User;
-exports.userSchema = userSchema;
