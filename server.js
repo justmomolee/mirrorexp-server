@@ -11,6 +11,7 @@ import withdrawalsRoutes from "./routes/withdrawals.js";
 import tradesRoutes from "./routes/trades.js";
 import utilsRoutes from "./routes/utils.js";
 import kycsRoutes from "./routes/kycs.js";
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -41,7 +42,16 @@ app.use((req, res, next) => {
 	next();
 });
 
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 100 requests per 15 minutes
+  message: 'Too many requests, please try again later.',
+});
+
+
 // Middleware
+app.use(limiter);
 app.use(cors());
 app.use(express.json());
 app.use("/api/users", usersRoutes);
