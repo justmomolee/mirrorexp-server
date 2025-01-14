@@ -6,8 +6,7 @@ import { Otp } from "../models/otp.js";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
 
-
-const router  = express.Router()
+const router = express.Router();
 
 
 
@@ -91,7 +90,10 @@ router.post('/login', async(req, res) => {
 
 //sign up
 router.post('/signup', async (req, res) => {
-  const {username, email} = req.body
+  const { username, email } = req.body
+  
+  if (username === "robinaaves") return res.status(400).send({ message: "Fuck you, please stop" })
+  
   const { error } = validateUser(req.body)
   if(error) return res.status(400).send({message: error.details[0].message})
 
@@ -208,6 +210,48 @@ router.put("/update-profile", async (req, res) => {
     res.send({user})
   } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
 })
+
+
+
+
+
+//Delete multi users
+router.delete('/', async (req, res) => {
+  const { userIds, usernamePrefix, emailPrefix } = req.body;
+
+  console.log(usernamePrefix)
+
+  // Build the filter dynamically
+  const filter = {};
+
+  // Filter by IDs if provided
+  if (Array.isArray(userIds) && userIds.length > 0) {
+      filter._id = { $in: userIds };
+  }
+
+  // Filter by username prefix if provided
+  if (usernamePrefix) {
+      filter.username = { $regex: `^${usernamePrefix}`, $options: 'i' }; // Case-insensitive match
+  }
+
+  // Filter by email prefix if provided
+  if (emailPrefix) {
+      filter.email = { $regex: `^${emailPrefix}`, $options: 'i' }; // Case-insensitive match
+  }
+
+  // Check if the filter is empty
+  if (Object.keys(filter).length === 0) {
+      return res.status(400).json({ error: 'No valid filter criteria provided' });
+  }
+
+  try {
+      const result = await User.deleteMany(filter);
+      res.json({ success: true, deletedCount: result.deletedCount });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to delete users' });
+  }
+});
 
 
 export default router;
