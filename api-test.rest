@@ -4,5 +4,5 @@ DELETE  {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "usernamePrefix": "robinaaves"
+  "usernamePrefix": "robinaaaves"
 }

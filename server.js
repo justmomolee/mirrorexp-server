@@ -11,7 +11,7 @@ import withdrawalsRoutes from "./routes/withdrawals.js";
 import tradesRoutes from "./routes/trades.js";
 import utilsRoutes from "./routes/utils.js";
 import kycsRoutes from "./routes/kycs.js";
-import rateLimit from 'express-rate-limit';
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -21,7 +21,7 @@ const server = http.createServer(app);
 // Verify transporter
 (async function verifyTP() {
 	await verifyTransporter();
-})()
+})();
 
 // Checking for required ENV variables
 if (!process.env.JWT_PRIVATE_KEY) {
@@ -42,16 +42,19 @@ app.use((req, res, next) => {
 	next();
 });
 
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 100 requests per 15 minutes
-  message: 'Too many requests, please try again later.',
+// Create a rate limiter for POST requests only
+const postLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 10, // Limit each IP to 10 POST requests per 15 minutes
+	handler: (req, res) => {
+		res.status(429).json({
+			message: "Too many requests, please try again later.",
+		});
+	},
 });
 
-
-// Middleware
-app.use(limiter);
+// Middlewares
+app.post("*", postLimiter);
 app.use(cors());
 app.use(express.json());
 app.use("/api/users", usersRoutes);

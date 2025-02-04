@@ -91,9 +91,7 @@ router.post('/login', async(req, res) => {
 //sign up
 router.post('/signup', async (req, res) => {
   const { username, email } = req.body
-  
-  if (username === "robinaaves") return res.status(400).send({ message: "Fuck you, please stop" })
-  
+    
   const { error } = validateUser(req.body)
   if(error) return res.status(400).send({message: error.details[0].message})
 
@@ -218,8 +216,6 @@ router.put("/update-profile", async (req, res) => {
 //Delete multi users
 router.delete('/', async (req, res) => {
   const { userIds, usernamePrefix, emailPrefix } = req.body;
-
-  console.log(usernamePrefix)
 
   // Build the filter dynamically
   const filter = {};
