@@ -5,6 +5,7 @@ import { passwordReset, welcomeMail, otpMail } from "../utils/mailer.js";
 import { Otp } from "../models/otp.js";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
+import { validateProfileUpdate, createErrorMessage } from "../utils/validation.js";
 
 const router = express.Router();
 
@@ -70,19 +71,26 @@ router.post('/mfa', async(req, res) => {
 
 // login user
 router.post('/login', async(req, res) => {
-  const { email, password } = req.body
-  const { error } = validateLogin(req.body)
+  // Sanitize inputs
+  const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+  const password = req.body.password;
+
+  const sanitizedBody = { email, password };
+  const { error } = validateLogin(sanitizedBody)
   if(error) return res.status(400).send({message: error.details[0].message})
-  
+
   try {
     const user = await User.findOne({ email })
     if(!user) return res.status(400).send({message: "user not found"})
-    
+
     const validatePassword = await bcrypt.compare(password, user.password)
     if(!validatePassword) return res.status(400).send({message: "Invalid password"})
-  
+
     res.send({user})
-  } catch (error) { for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+  } catch (e) {
+    console.error('Login error:', e);
+    return res.status(500).send({message: "Login failed. Please try again."});
+  }
 })
 
 
@@ -90,9 +98,16 @@ router.post('/login', async(req, res) => {
 
 //sign up
 router.post('/signup', async (req, res) => {
-  const { username, email } = req.body
-    
-  const { error } = validateUser(req.body)
+  // Sanitize inputs
+  const username = req.body.username ? req.body.username.trim() : '';
+  const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+  const password = req.body.password;
+  const referredBy = req.body.referredBy ? req.body.referredBy.trim() : '';
+
+  // Create sanitized body for validation
+  const sanitizedBody = { username, email, password, referredBy };
+
+  const { error } = validateUser(sanitizedBody)
   if(error) return res.status(400).send({message: error.details[0].message})
 
   let user = await User.findOne({ $or: [{email}, {username}] })
@@ -105,35 +120,75 @@ router.post('/signup', async (req, res) => {
 
     res.send({message: 'success'})
   }
-  catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+  catch(e){
+    console.error('Signup error:', e);
+    if(e.errors) {
+      for(let i in e.errors) {
+        return res.status(400).send({message: e.errors[i].message});
+      }
+    }
+    return res.status(500).send({message: "Failed to create account. Please try again."});
+  }
 })
 
 
 
 //create a new user
 router.post('/otp', async (req, res) => {
-  const {username, email, password, referredBy} = req.body
-  
+  // Sanitize inputs
+  const username = req.body.username ? req.body.username.trim() : '';
+  const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+  const password = req.body.password;
+  const referredBy = req.body.referredBy ? req.body.referredBy.trim() : '';
+  const code = req.body.code ? req.body.code.trim() : '';
+
+  // Validate OTP code
+  if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+    return res.status(400).send({ message: "Invalid OTP code. Please enter a 6-digit code." });
+  }
+
+  // Verify OTP exists and matches
+  const otpRecord = await Otp.findOne({ email, code });
+  if (!otpRecord) {
+    return res.status(400).send({ message: "Invalid or expired OTP code. Please request a new one." });
+  }
+
   try{
     let user = await User.findOne({ email })
-    console.log(req.body)
 
     if(!user) {
-      user = new User({username, email, password, referredBy})
+      // Create new user
+      user = new User({ username, email, password, referredBy })
       const salt = await bcrypt.genSalt(10)
       user.password = await bcrypt.hash(password, salt)
 
       user = await user.save()
       welcomeMail(email)
-      res.send({user})
+
+      // Delete used OTP
+      await Otp.deleteOne({ email, code });
+
+      res.send({ user })
     } else {
+      // User already exists, verify password
       const validatePassword = await bcrypt.compare(password, user.password)
       if(!validatePassword) return res.status(400).send({message: "Invalid password"})
-    
-      res.send({user})
+
+      // Delete used OTP
+      await Otp.deleteOne({ email, code });
+
+      res.send({ user })
     }
   }
-  catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+  catch(e){
+    console.error('OTP verification error:', e);
+    if(e.errors) {
+      for(let i in e.errors) {
+        return res.status(400).send({message: e.errors[i].message});
+      }
+    }
+    return res.status(500).send({message: "Failed to verify account. Please try again."});
+  }
 })
 
 
@@ -198,15 +253,40 @@ router.post('/verifyToken', async(req, res) => {
 
 
 router.put("/update-profile", async (req, res) => {
-  let user = await User.findOne({email: req.body.email});
-  if (!user) return res.status(404).send({message: "User not found"});
-  
+  // Validate and sanitize profile data
+  const validation = validateProfileUpdate(req.body);
+
+  if (!validation.isValid) {
+    const errorMessage = createErrorMessage(validation.errors);
+    return res.status(400).send({ message: errorMessage });
+  }
+
   try {
-    user.set(req.body);
+    let user = await User.findOne({ email: validation.sanitized.email });
+    if (!user) return res.status(404).send({ message: "User not found" });
+
+    // Only update allowed fields with sanitized data
+    const allowedFields = ['fullName', 'country', 'phone', 'address', 'state', 'city', 'zipCode'];
+
+    allowedFields.forEach(field => {
+      if (validation.sanitized[field] !== undefined) {
+        user[field] = validation.sanitized[field];
+      }
+    });
 
     user = await user.save();
-    res.send({user})
-  } catch(e){ for(i in e.errors) res.status(500).send({message: e.errors[i].message}) }
+    res.send({ user });
+  } catch(e) {
+    console.error('Error updating profile:', e);
+
+    // Handle mongoose validation errors
+    if (e.errors) {
+      const errors = Object.values(e.errors).map(err => err.message);
+      return res.status(400).send({ message: createErrorMessage(errors) });
+    }
+
+    return res.status(500).send({ message: "Failed to update profile. Please try again." });
+  }
 })
 
 
