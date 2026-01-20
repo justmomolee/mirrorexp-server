@@ -6,12 +6,19 @@ import { Otp } from "../models/otp.js";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
 import { validateProfileUpdate, createErrorMessage } from "../utils/validation.js";
+import { auth, requireAdmin } from "../middleware/auth.js";
+import { recordActivity } from "../utils/activityLogger.js";
 
 const router = express.Router();
 
+const serializeUser = (user) => {
+  if (!user) return null;
+  const { password, __v, ...safeData } = user.toObject();
+  return safeData;
+};
 
 
-router.get("/getQrcode", async (req, res) => {
+router.get("/getQrcode", auth, async (req, res) => {
   const secret = speakeasy.generateSecret({name: 'mirrorexp'});
 
   qrcode.toDataURL(secret.otpauth_url, (err, data) => {
@@ -20,20 +27,20 @@ router.get("/getQrcode", async (req, res) => {
 })
 
 
-router.get('/:id', async(req, res) => {
+router.get('/me', auth, async(req, res) => {
   try {
-    let user = await User.findById(req.params.id)
+    const user = await User.findById(req.authUser._id)
     if(!user) return res.status(400).send({message: "user not found"})
-    res.send({user})
+    res.send({user: serializeUser(user)})
   } catch (x) { return res.status(500).send({message: "Something Went Wrong..."}) }
 })
 
 
 // Getting all users sorted by creation date (newest first)
-router.get('/', async (req, res) => {
+router.get('/', auth, requireAdmin, async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
-    res.send(users);
+    res.send(users.map(serializeUser));
   } catch (error) { return res.status(500).send({ message: "Something Went Wrong..." }) }
 });
 
@@ -54,12 +61,16 @@ router.get('/reset-password/:email', async(req, res) => {
 
 
 // verify user
-router.post('/mfa', async(req, res) => {
+router.post('/mfa', auth, async(req, res) => {
   const { email } = req.body
 
   try {
     let user = await User.findOne({ email })
     if(!user) return res.status(400).send({message: "user not found"})
+
+    if (req.authUser.email !== user.email) {
+      return res.status(403).send({ message: "Forbidden" });
+    }
     
     user.mfa = true
     user = await user.save()
@@ -86,7 +97,20 @@ router.post('/login', async(req, res) => {
     const validatePassword = await bcrypt.compare(password, user.password)
     if(!validatePassword) return res.status(400).send({message: "Invalid password"})
 
-    res.send({user})
+    const token = user.genAuthToken()
+    const safeUser = serializeUser(user)
+
+    if (user.isAdmin) {
+      await recordActivity({
+        req,
+        actor: user,
+        action: "admin_login",
+        targetCollection: "users",
+        targetId: user._id.toString(),
+      });
+    }
+
+    res.send({user: safeUser, token})
   } catch (e) {
     console.error('Login error:', e);
     return res.status(500).send({message: "Login failed. Please try again."});
@@ -168,7 +192,8 @@ router.post('/otp', async (req, res) => {
       // Delete used OTP
       await Otp.deleteOne({ email, code });
 
-      res.send({ user })
+      const token = user.genAuthToken();
+      res.send({ user: serializeUser(user), token })
     } else {
       // User already exists, verify password
       const validatePassword = await bcrypt.compare(password, user.password)
@@ -177,7 +202,8 @@ router.post('/otp', async (req, res) => {
       // Delete used OTP
       await Otp.deleteOne({ email, code });
 
-      res.send({ user })
+      const token = user.genAuthToken();
+      res.send({ user: serializeUser(user), token })
     }
   }
   catch(e){
@@ -228,10 +254,12 @@ router.put('/new-password', async(req, res) => {
 
 
 // Veryify 2FA for user
-router.post('/verifyToken', async(req, res) => {
+router.post('/verifyToken', auth, async(req, res) => {
   const { token, secret, email } = req.body
 
-  let user = await User.findOne({ email })
+  const lookupEmail = email || req.authUser.email;
+
+  let user = await User.findOne({ email: lookupEmail })
   if(!user) return res.status(400).send({message: "Invalid email"})
 
   try {
@@ -252,7 +280,7 @@ router.post('/verifyToken', async(req, res) => {
 
 
 
-router.put("/update-profile", async (req, res) => {
+router.put("/update-profile", auth, async (req, res) => {
   // Validate and sanitize profile data
   const validation = validateProfileUpdate(req.body);
 
@@ -262,20 +290,39 @@ router.put("/update-profile", async (req, res) => {
   }
 
   try {
-    let user = await User.findOne({ email: validation.sanitized.email });
-    if (!user) return res.status(404).send({ message: "User not found" });
+    let user = req.authUser;
+    let targetUser = user;
+
+    if (req.authUser.isAdmin && req.body.userId) {
+      const requestedUser = await User.findById(req.body.userId);
+      if (!requestedUser) return res.status(404).send({ message: "User not found" });
+      targetUser = requestedUser;
+    } else {
+      validation.sanitized.email = user.email;
+    }
 
     // Only update allowed fields with sanitized data
     const allowedFields = ['fullName', 'country', 'phone', 'address', 'state', 'city', 'zipCode'];
 
     allowedFields.forEach(field => {
       if (validation.sanitized[field] !== undefined) {
-        user[field] = validation.sanitized[field];
+        targetUser[field] = validation.sanitized[field];
       }
     });
 
-    user = await user.save();
-    res.send({ user });
+    targetUser = await targetUser.save();
+
+    if (req.authUser.isAdmin && targetUser._id.toString() !== req.authUser._id.toString()) {
+      await recordActivity({
+        req,
+        actor: req.authUser,
+        action: "admin_update_user",
+        targetCollection: "users",
+        targetId: targetUser._id.toString(),
+      });
+    }
+
+    res.send({ user: serializeUser(targetUser) });
   } catch(e) {
     console.error('Error updating profile:', e);
 
@@ -293,8 +340,23 @@ router.put("/update-profile", async (req, res) => {
 
 
 
+router.get('/:id', auth, async(req, res) => {
+  try {
+    const targetUser = await User.findById(req.params.id)
+    if(!targetUser) return res.status(400).send({message: "user not found"})
+
+    const isSelf = req.authUser._id.toString() === targetUser._id.toString();
+    if (!isSelf && !req.authUser.isAdmin) {
+      return res.status(403).send({ message: "Forbidden" });
+    }
+
+    res.send({user: serializeUser(targetUser)})
+  } catch (x) { return res.status(500).send({message: "Something Went Wrong..."}) }
+})
+
+
 //Delete multi users
-router.delete('/', async (req, res) => {
+router.delete('/', auth, requireAdmin, async (req, res) => {
   const { userIds, usernamePrefix, emailPrefix } = req.body;
 
   // Build the filter dynamically
@@ -322,6 +384,17 @@ router.delete('/', async (req, res) => {
 
   try {
       const result = await User.deleteMany(filter);
+
+      if (result.deletedCount) {
+        await recordActivity({
+          req,
+          actor: req.authUser,
+          action: "admin_delete_users",
+          targetCollection: "users",
+          metadata: { deletedCount: result.deletedCount, userIds, usernamePrefix, emailPrefix },
+        });
+      }
+
       res.json({ success: true, deletedCount: result.deletedCount });
   } catch (error) {
       console.error(error);

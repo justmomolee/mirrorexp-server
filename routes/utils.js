@@ -1,11 +1,13 @@
 import express from 'express';
 import { Util } from '../models/util.js';
 import { multiMails } from '../utils/mailer.js';
+import { auth, requireAdmin } from '../middleware/auth.js';
+import { recordActivity } from '../utils/activityLogger.js';
 
 const router = express.Router();
 
 // getting all utils
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
 	try {
 		const utils = await Util.find();
 		res.send(utils[0]);
@@ -15,7 +17,7 @@ router.get("/", async (req, res) => {
 });
 
 // updating a util
-router.put("/update/:id", async (req, res) => {
+router.put("/update/:id", auth, requireAdmin, async (req, res) => {
 	const { id } = req.params;
 
 	try {
@@ -32,6 +34,15 @@ router.put("/update/:id", async (req, res) => {
 
 		if (!util) return res.status(404).send("Util not found");
 
+		await recordActivity({
+			req,
+			actor: req.authUser,
+			action: "admin_update_utils",
+			targetCollection: "utils",
+			targetId: id,
+			metadata: req.body,
+		});
+
 		res.status(200).send(util);
 	} catch (error) {
 		for (i in error.errors) res.status(500).send(error.errors[i].message);
@@ -39,7 +50,7 @@ router.put("/update/:id", async (req, res) => {
 });
 
 // deleting a util
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, requireAdmin, async (req, res) => {
 	const { id } = req.params;
 
 	try {
@@ -53,7 +64,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // POST route to send mail
-router.post("/send-mail", async (req, res) => {
+router.post("/send-mail", auth, requireAdmin, async (req, res) => {
 	const { emails, subject, message } = req.body;
 
 	if (!emails || !Array.isArray(emails) || emails.length === 0) {
@@ -67,6 +78,14 @@ router.post("/send-mail", async (req, res) => {
 	try {
 		const emailData = await multiMails(emails, subject, message);
 		if (emailData.error) return res.status(400).send({ message: emailData.error });
+
+		await recordActivity({
+			req,
+			actor: req.authUser,
+			action: "admin_send_mail",
+			targetCollection: "utils",
+			metadata: { emails, subject },
+		});
 
 		res.status(200).json({
 			message: "Emails sent successfully",

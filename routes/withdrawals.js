@@ -2,11 +2,13 @@ import express from "express";
 import { Transaction } from "../models/transaction.js";
 import { User } from "../models/user.js";
 import { alertAdmin, withdrawalMail } from "../utils/mailer.js";
+import { auth, requireAdmin } from "../middleware/auth.js";
+import { recordActivity } from "../utils/activityLogger.js";
 
 const router = express.Router();
 
 // getting all withdrawals
-router.get("/", async (req, res) => {
+router.get("/", auth, requireAdmin, async (req, res) => {
 	try {
 		const withdrawals = await Transaction.find({ type: "withdrawal" });
 		res.send(withdrawals);
@@ -16,12 +18,16 @@ router.get("/", async (req, res) => {
 });
 
 // getting single withdrawal
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
 	const { id } = req.params;
 
 	try {
 		const withdrawal = await Transaction.findById(id);
 		if (!withdrawal) return res.status(400).send({ message: "Transaction not found..." });
+		const isOwner = withdrawal.user?.email === req.authUser?.email;
+		if (!isOwner && !req.authUser.isAdmin) {
+			return res.status(403).send({ message: "Forbidden" });
+		}
 		res.send(withdrawal);
 	} catch (e) {
 		for (i in e.errors) res.status(500).send({ message: e.errors[i].message });
@@ -29,10 +35,14 @@ router.get("/:id", async (req, res) => {
 });
 
 // get all withdrawals by user
-router.get("/user/:email", async (req, res) => {
+router.get("/user/:email", auth, async (req, res) => {
 	const { email } = req.params;
 
 	try {
+		if (req.authUser.email !== email && !req.authUser.isAdmin) {
+			return res.status(403).send({ message: "Forbidden" });
+		}
+
 		const withdrawals = await Transaction.find({ from: email });
 		if (!withdrawals || withdrawals.length === 0)
 			return res.status(400).send({ message: "Transactions not found..." });
@@ -43,15 +53,15 @@ router.get("/user/:email", async (req, res) => {
 });
 
 // making a withdrawal
-router.post("/", async (req, res) => {
-	const { id, amount, convertedAmount, coinName, network, address } = req.body;
+router.post("/", auth, async (req, res) => {
+	const { amount, convertedAmount, coinName, network, address } = req.body;
 
-	const user = await User.findById(id);
+	const user = req.authUser;
 	if (!user) return res.status(400).send({ message: "Something went wrong" });
 
 	// Check if there's any pending withdrawal for the user
 	const pendingWithdrawal = await Transaction.findOne({
-		"user.id": id,
+		"user.id": user._id,
 		status: "pending",
 		type: "withdrawal",
 	});
@@ -92,7 +102,7 @@ router.post("/", async (req, res) => {
 });
 
 // updating a withdrawal
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, requireAdmin, async (req, res) => {
 	const { id } = req.params;
 	const { email, amount, status } = req.body;
 
@@ -119,6 +129,15 @@ router.put("/:id", async (req, res) => {
 
 		const emailData = await withdrawalMail(fullName, amount, date, email, isRejected);
 		if (emailData.error) return res.status(400).send({ message: emailData.error });
+
+		await recordActivity({
+			req,
+			actor: req.authUser,
+			action: "admin_update_withdrawal",
+			targetCollection: "transactions",
+			targetId: withdrawal._id.toString(),
+			metadata: { status, amount, email },
+		});
 
 		res.send({ message: "Withdrawal successfully updated" });
 	} catch (e) {

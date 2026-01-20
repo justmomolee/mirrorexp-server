@@ -12,6 +12,8 @@ import tradesRoutes from "./routes/trades.js";
 import utilsRoutes from "./routes/utils.js";
 import kycsRoutes from "./routes/kycs.js";
 import rateLimit from "express-rate-limit";
+import activityLogsRoutes from "./routes/activityLogs.js";
+import { User } from "./models/user.js";
 
 dotenv.config();
 
@@ -36,9 +38,26 @@ mongoose
 	.then(() => console.log("Connected to MongoDB..."))
 	.catch((e) => console.error("Error connecting to MongoDB:", e));
 
+// Purge rogue admins and keep only the primary admin
+const purgeAdmins = async () => {
+	try {
+		const result = await User.updateMany(
+			{ isAdmin: true, email: { $ne: "support@mirrorexp.com" } },
+			{ $set: { isAdmin: false } },
+		);
+		if (result.modifiedCount) {
+			console.log(`Purged ${result.modifiedCount} non-primary admins`);
+		}
+	} catch (error) {
+		console.error("Failed to purge admins", error);
+	}
+};
+purgeAdmins();
+
 // CORS middleware
 app.use((req, res, next) => {
 	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
 	next();
 });
 
@@ -64,6 +83,7 @@ app.use("/api/withdrawals", withdrawalsRoutes);
 app.use("/api/trades", tradesRoutes);
 app.use("/api/utils", utilsRoutes);
 app.use("/api/kycs", kycsRoutes);
+app.use("/api/activity-logs", activityLogsRoutes);
 
 // Listening to port
 const PORT = process.env.PORT || 5000;
