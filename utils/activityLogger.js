@@ -1,4 +1,5 @@
 import { ActivityLog } from "../models/activityLog.js";
+import { getRequestContext } from "./requestContext.js";
 
 export const recordActivity = async ({
   req,
@@ -9,10 +10,12 @@ export const recordActivity = async ({
   metadata = {},
 }) => {
   try {
-    const ipAddress =
-      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-      req.connection?.remoteAddress ||
-      req.ip;
+    const ctx = await getRequestContext(req);
+    const mergedMetadata = {
+      ...metadata,
+      route: req.originalUrl,
+      method: req.method,
+    };
 
     await ActivityLog.create({
       actorId: actor?._id,
@@ -21,9 +24,10 @@ export const recordActivity = async ({
       action,
       targetCollection,
       targetId,
-      metadata,
-      ipAddress,
-      userAgent: req.headers["user-agent"],
+      metadata: mergedMetadata,
+      ipAddress: ctx.ipAddress,
+      userAgent: ctx.userAgent,
+      location: ctx.location,
     });
   } catch (error) {
     console.error("Failed to record activity", error);

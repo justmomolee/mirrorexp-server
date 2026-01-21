@@ -302,13 +302,34 @@ router.put("/update-profile", auth, async (req, res) => {
     }
 
     // Only update allowed fields with sanitized data
-    const allowedFields = ['fullName', 'country', 'phone', 'address', 'state', 'city', 'zipCode'];
+    const allowedFields = [
+      'fullName',
+      'country',
+      'phone',
+      'address',
+      'state',
+      'city',
+      'zipCode',
+    ];
+
+    const adminNumberFields = ['deposit', 'interest', 'trade', 'bonus'];
+    const fieldsUpdated = [];
 
     allowedFields.forEach(field => {
       if (validation.sanitized[field] !== undefined) {
         targetUser[field] = validation.sanitized[field];
+        fieldsUpdated.push(field);
       }
     });
+
+    if (req.authUser.isAdmin) {
+      adminNumberFields.forEach((field) => {
+        if (req.body[field] !== undefined && !Number.isNaN(Number(req.body[field]))) {
+          targetUser[field] = Number(req.body[field]);
+          fieldsUpdated.push(field);
+        }
+      });
+    }
 
     targetUser = await targetUser.save();
 
@@ -319,6 +340,18 @@ router.put("/update-profile", auth, async (req, res) => {
         action: "admin_update_user",
         targetCollection: "users",
         targetId: targetUser._id.toString(),
+        metadata: { fieldsUpdated },
+      });
+    }
+
+    if (!req.authUser.isAdmin || targetUser._id.toString() === req.authUser._id.toString()) {
+      await recordActivity({
+        req,
+        actor: req.authUser,
+        action: "user_update_profile",
+        targetCollection: "users",
+        targetId: targetUser._id.toString(),
+        metadata: { fieldsUpdated },
       });
     }
 
