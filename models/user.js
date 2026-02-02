@@ -60,22 +60,22 @@ export const userSchema = new mongoose.Schema({
   deposit: {
     type: Number,
     default: 0,
-    minLength: 0,
+    min: 0,
   },
   interest: {
     type: Number,
     default: 0,
-    minLength: 0,
+    min: 0,
   },
   withdraw: {
     type: Number,
     default: 0,
-    minLength: 0,
+    min: 0,
   },
   bonus: {
     type: Number,
     default: 0,
-    minLength: 0,
+    min: 0,
   },
   referredBy: {
     type: String,
