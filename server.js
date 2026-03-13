@@ -54,12 +54,14 @@ const purgeAdmins = async () => {
 };
 purgeAdmins();
 
-// CORS middleware
-app.use((req, res, next) => {
-	res.header("Access-Control-Allow-Origin", "*");
-	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-	next();
-});
+// CORS configuration
+const corsOptions = {
+	origin: ["https://www.mirrorexp.com", "http://localhost:5173", "http://localhost:3000"],
+	credentials: true,
+	optionsSuccessStatus: 200,
+	methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+	allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+};
 
 // Create a rate limiter for POST requests only
 const postLimiter = rateLimit({
@@ -73,8 +75,8 @@ const postLimiter = rateLimit({
 });
 
 // Middlewares
+app.use(cors(corsOptions));
 app.post("*", postLimiter);
-app.use(cors());
 app.use(express.json());
 app.use("/api/users", usersRoutes);
 app.use("/api/transactions", transactionsRoutes);
@@ -90,5 +92,5 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
 app.get("/", (req, res) => {
-	res.header("Access-Control-Allow-Origin", "*").send("API running 🥳");
+	res.send("API running 🥳");
 });
