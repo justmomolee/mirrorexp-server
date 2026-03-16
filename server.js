@@ -20,39 +20,49 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Verify transporter
-(async function verifyTP() {
-	await verifyTransporter();
-})();
-
 // Checking for required ENV variables
 if (!process.env.JWT_PRIVATE_KEY) {
 	console.error("Fatal Error: jwtPrivateKey is required");
 	process.exit(1);
 }
 
-// Connecting to MongoDB
-mongoose.set("strictQuery", false);
-mongoose
-	.connect(process.env.MONGODB_URL)
-	.then(() => console.log("Connected to MongoDB..."))
-	.catch((e) => console.error("Error connecting to MongoDB:", e));
+if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+	console.error("Fatal Error: SMTP_USER and SMTP_PASSWORD are required");
+	process.exit(1);
+}
 
-// Purge rogue admins and keep only the primary admin
-const purgeAdmins = async () => {
+// Initialize server
+async function startServer() {
 	try {
+		// Verify email transporter first
+		await verifyTransporter();
+
+		// Connect to MongoDB
+		mongoose.set("strictQuery", false);
+		await mongoose.connect(process.env.MONGODB_URL);
+		console.log("✓ Connected to MongoDB");
+
+		// Purge rogue admins and keep only the primary admin
 		const result = await User.updateMany(
 			{ isAdmin: true, email: { $ne: "support@mirrorexp.com" } },
 			{ $set: { isAdmin: false } },
 		);
 		if (result.modifiedCount) {
-			console.log(`Purged ${result.modifiedCount} non-primary admins`);
+			console.log(`✓ Purged ${result.modifiedCount} non-primary admins`);
 		}
+
+		// Start listening only after all initialization is complete
+		const PORT = process.env.PORT || 5000;
+		server.listen(PORT, () => {
+			console.log(`✓ Server is running on port ${PORT}`);
+		});
 	} catch (error) {
-		console.error("Failed to purge admins", error);
+		console.error("Failed to start server:", error instanceof Error ? error.message : error);
+		process.exit(1);
 	}
-};
-purgeAdmins();
+}
+
+startServer();
 
 // CORS configuration
 const corsOptions = {
@@ -86,10 +96,6 @@ app.use("/api/trades", tradesRoutes);
 app.use("/api/utils", utilsRoutes);
 app.use("/api/kycs", kycsRoutes);
 app.use("/api/activity-logs", activityLogsRoutes);
-
-// Listening to port
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
 app.get("/", (req, res) => {
 	res.send("API running 🥳");
