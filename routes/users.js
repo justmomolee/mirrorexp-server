@@ -117,6 +117,40 @@ router.post('/login', async(req, res) => {
   }
 })
 
+router.post('/impersonate', auth, requireAdmin, async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).send({ message: "User ID is required" });
+  }
+
+  try {
+    const targetUser = await User.findById(userId);
+    if (!targetUser) return res.status(404).send({ message: "User not found" });
+
+    const token = targetUser.genAuthToken();
+
+    await recordActivity({
+      req,
+      actor: req.authUser,
+      action: "admin_impersonate_user",
+      targetCollection: "users",
+      targetId: targetUser._id.toString(),
+      metadata: { impersonatedEmail: targetUser.email },
+    });
+
+    res.send({ user: serializeUser(targetUser), token });
+  } catch (e) {
+    console.error('Impersonation error:', e);
+
+    if (e.name === "CastError") {
+      return res.status(400).send({ message: "Invalid user ID" });
+    }
+
+    return res.status(500).send({ message: "Failed to login as user. Please try again." });
+  }
+})
+
 
 
 
