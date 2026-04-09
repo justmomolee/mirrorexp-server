@@ -63,6 +63,34 @@ const transactionSchema = new mongoose.Schema({
       type: Number,
       default: 0,
     },
+    traderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Trader",
+    },
+    traderName: {
+      type: String,
+      default: '',
+    },
+    specialization: {
+      type: String,
+      default: '',
+    },
+    markets: {
+      type: [String],
+      default: [],
+    },
+    marketCategory: {
+      type: String,
+      default: '',
+    },
+    requiredBalance: {
+      type: Number,
+      default: 0,
+    },
+    summary: {
+      type: String,
+      default: '',
+    },
   }
 });
 

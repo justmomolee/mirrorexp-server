@@ -77,6 +77,11 @@ export const userSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+  trade: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
   referredBy: {
     type: String,
     default: "",
@@ -102,7 +107,15 @@ export const userSchema = new mongoose.Schema({
     type: String,
     maxLength: 50,
     default: "welcome",
-  }
+  },
+  copiedTraders: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Trader",
+    },
+  ],
+}, {
+  minimize: false,
 });
 
 
