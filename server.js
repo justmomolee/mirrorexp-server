@@ -67,7 +67,7 @@ startServer();
 
 // CORS configuration
 const corsOptions = {
-	origin: ["https://www.mirrorexp.com", "http://localhost:5173", "http://localhost:3000"],
+	origin: ["https://www.mirrorexps.com", "https://mirrorexps.com", "http://localhost:5173", "http://localhost:3000"],
 	credentials: true,
 	optionsSuccessStatus: 200,
 	methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
